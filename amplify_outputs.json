@@ -28,15 +28,17 @@
   "data": {
     "url": "https://hu7p3yxfgjcnjet5wbwpgtawtq.appsync-api.us-east-1.amazonaws.com/graphql",
     "aws_region": "us-east-1",
-    "default_authorization_type": "AWS_IAM",
+    "api_key": "da2-dfzkp36dbrhbhmcdhyd3pfspcy",
+    "default_authorization_type": "API_KEY",
     "authorization_types": [
-      "AMAZON_COGNITO_USER_POOLS"
+      "AMAZON_COGNITO_USER_POOLS",
+      "AWS_IAM"
     ],
     "model_introspection": {
       "version": 1,
       "models": {
-        "Todo": {
-          "name": "Todo",
+        "UserProfile": {
+          "name": "UserProfile",
           "fields": {
             "id": {
               "name": "id",
@@ -45,8 +47,15 @@
               "isRequired": true,
               "attributes": []
             },
-            "content": {
-              "name": "content",
+            "email": {
+              "name": "email",
+              "isArray": false,
+              "type": "String",
+              "isRequired": false,
+              "attributes": []
+            },
+            "profileOwner": {
+              "name": "profileOwner",
               "isArray": false,
               "type": "String",
               "isRequired": false,
@@ -70,7 +79,7 @@
             }
           },
           "syncable": true,
-          "pluralName": "Todos",
+          "pluralName": "UserProfiles",
           "attributes": [
             {
               "type": "model",
@@ -81,8 +90,10 @@
               "properties": {
                 "rules": [
                   {
-                    "allow": "public",
-                    "provider": "iam",
+                    "provider": "userPools",
+                    "ownerField": "profileOwner",
+                    "allow": "owner",
+                    "identityClaim": "cognito:username",
                     "operations": [
                       "create",
                       "update",
