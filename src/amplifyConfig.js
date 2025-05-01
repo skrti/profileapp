@@ -1,4 +1,5 @@
 // src/amplifyConfig.js
+import './amplifyConfig';
 import { Amplify } from 'aws-amplify';
 
 Amplify.configure({
