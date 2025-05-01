@@ -1,78 +1,73 @@
-import { useState, useEffect } from "react";
-import {
-  Button,
-  Heading,
-  Flex,
-  View,
-  Grid,
-  Divider,
-} from "@aws-amplify/ui-react";
-import { useAuthenticator } from "@aws-amplify/ui-react";
-import { Amplify } from "aws-amplify";
-import "@aws-amplify/ui-react/styles.css";
-import { generateClient } from "aws-amplify/data";
-import outputs from "../amplify_outputs.json";
-/**
- * @type {import('aws-amplify/data').Client<import('../amplify/data/resource').Schema>}
- */
+// LoginSignupForm.jsx
+import React, { useState } from 'react';
+import { Auth } from 'aws-amplify';
+import './amplifyConfig'; // import your config
 
-Amplify.configure(outputs);
-const client = generateClient({
-  authMode: "userPool",
-});
+export default function LoginSignupForm() {
+  const [isSignup, setIsSignup] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmationCode, setConfirmationCode] = useState('');
+  const [step, setStep] = useState('form'); // form | confirm
 
-export default function App() {
-  const [userprofiles, setUserProfiles] = useState([]);
-  const { signOut } = useAuthenticator((context) => [context.user]);
+  const handleSignup = async () => {
+    try {
+      await Auth.signUp({ username: email, password });
+      alert('Sign up successful! Check your email for a verification code.');
+      setStep('confirm');
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
-  useEffect(() => {
-    fetchUserProfile();
-  }, []);
+  const handleConfirm = async () => {
+    try {
+      await Auth.confirmSignUp(email, confirmationCode);
+      alert('Email verified! You can now log in.');
+      setIsSignup(false);
+      setStep('form');
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
-  async function fetchUserProfile() {
-    const { data: profiles } = await client.models.UserProfile.list();
-    setUserProfiles(profiles);
-  }
+  const handleLogin = async () => {
+    try {
+      const user = await Auth.signIn(email, password);
+      alert(`Logged in as ${user.username}`);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
 
   return (
-    <Flex
-      className="App"
-      justifyContent="center"
-      alignItems="center"
-      direction="column"
-      width="70%"
-      margin="0 auto"
-    >
-      <Heading level={1}>My Profile</Heading>
+    <div style={{ maxWidth: '400px', margin: 'auto' }}>
+      <h2>{isSignup ? 'Sign Up' : 'Log In'}</h2>
 
-      <Divider />
+      {step === 'form' ? (
+        <>
+          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} /><br />
+          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} /><br />
 
-      <Grid
-        margin="3rem 0"
-        autoFlow="column"
-        justifyContent="center"
-        gap="2rem"
-        alignContent="center"
-      >
-        {userprofiles.map((userprofile) => (
-          <Flex
-            key={userprofile.id || userprofile.email}
-            direction="column"
-            justifyContent="center"
-            alignItems="center"
-            gap="2rem"
-            border="1px solid #ccc"
-            padding="2rem"
-            borderRadius="5%"
-            className="box"
-          >
-            <View>
-              <Heading level="3">{userprofile.email}</Heading>
-            </View>
-          </Flex>
-        ))}
-      </Grid>
-      <Button onClick={signOut}>Sign Out</Button>
-    </Flex>
+          {isSignup ? (
+            <button onClick={handleSignup}>Sign Up</button>
+          ) : (
+            <button onClick={handleLogin}>Log In</button>
+          )}
+
+          <p>
+            {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
+            <button onClick={() => setIsSignup(!isSignup)}>
+              {isSignup ? 'Log In' : 'Sign Up'}
+            </button>
+          </p>
+        </>
+      ) : (
+        <>
+          <input type="text" placeholder="Verification Code" value={confirmationCode} onChange={e => setConfirmationCode(e.target.value)} /><br />
+          <button onClick={handleConfirm}>Confirm Sign Up</button>
+        </>
+      )}
+    </div>
   );
 }
