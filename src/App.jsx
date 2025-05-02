@@ -80,7 +80,7 @@ export default function App() {
 export default function App() {
   const [showForgot, setShowForgot] = useState(false);
   const [userprofiles, setUserProfiles] = useState([]);
-  const { signOut } = useAuthenticator((context) => [context.user]);
+ 
 
   useEffect(() => {
     fetchUserProfile();
