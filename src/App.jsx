@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import ForgotPassword from "./ForgotPassword";
 import {
   Button,
   Heading,
@@ -73,6 +74,61 @@ export default function App() {
         ))}
       </Grid>
       <Button onClick={signOut}>Sign Out</Button>
+    </Flex>
+  );
+}
+export default function App() {
+  const [showForgot, setShowForgot] = useState(false);
+  const [userprofiles, setUserProfiles] = useState([]);
+  const { signOut } = useAuthenticator((context) => [context.user]);
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  async function fetchUserProfile() {
+    const { data: profiles } = await client.models.UserProfile.list();
+    setUserProfiles(profiles);
+  }
+
+  if (showForgot) {
+    return <ForgotPassword />;
+  }
+
+  return (
+    <Flex
+      className="App"
+      justifyContent="center"
+      alignItems="center"
+      direction="column"
+      width="70%"
+      margin="0 auto"
+    >
+      <Heading level={1}>My Profile</Heading>
+      <Divider />
+      <Grid margin="3rem 0" autoFlow="column" justifyContent="center" gap="2rem">
+        {userprofiles.map((userprofile) => (
+          <Flex
+            key={userprofile.id || userprofile.email}
+            direction="column"
+            justifyContent="center"
+            alignItems="center"
+            gap="2rem"
+            border="1px solid #ccc"
+            padding="2rem"
+            borderRadius="5%"
+            className="box"
+          >
+            <View>
+              <Heading level="3">{userprofile.email}</Heading>
+            </View>
+          </Flex>
+        ))}
+      </Grid>
+      <Button onClick={signOut}>Sign Out</Button>
+      <Button onClick={() => setShowForgot(true)} variation="link">
+        Forgot Password?
+      </Button>
     </Flex>
   );
 }
